@@ -74,9 +74,9 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-3">
-                    <h2 class="mb-0 text-primary fw-bold">
-                        <i class="fas fa-share-alt me-2"></i>sosial
-                    </h2>
+                    <a href="{{ url('/Home') }}">
+                        <img src="{{ asset('build/assets/sosial_logo.png') }}" alt="Sosial Logo" style="height: 60px;">
+                    </a>
                 </div>
                 <div class="col-md-9">
                     <div class="d-flex justify-content-end gap-2">
@@ -92,8 +92,8 @@
                             class="btn {{ request()->is('notification') ? 'btn-primary' : 'btn-outline-primary' }}">
                             <i class="fas fa-bell me-1"></i>Notifications
                         </a>
-                        <a href="{{ url('/profile') }}"
-                            class="btn {{ request()->is('profile') ? 'btn-primary' : 'btn-outline-primary' }}">
+                        <a href="{{ route('profile', ['id' => Auth::user()->id]) }}"
+                            class="btn {{ request()->is('profile*') ? 'btn-primary' : 'btn-outline-primary' }}">
                             <i class="fas fa-user me-1"></i>Profile
                         </a>
                     </div>

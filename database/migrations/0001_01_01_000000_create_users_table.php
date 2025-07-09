@@ -21,8 +21,12 @@ return new class extends Migration
             $table->rememberToken();
             $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
             $table->string('profile_pic')->nullable();
+            $table->string('phone')->nullable();
             $table->dateTime('birthDate')->nullable();
             $table->string('gender')->nullable();
+            $table->text('bio')->nullable();
+            $table->string('location')->nullable();
+            $table->string('website')->nullable();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

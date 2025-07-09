@@ -2,15 +2,20 @@
 
 namespace App\Models;
 
+use App\Models\Post;
+
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
+    protected $primaryKey = 'id';
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -20,11 +25,16 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'email_verfied_at',
         'password',
         'role_id',
         'profile_pic',
         'gender',
-        'birthday',
+        'birthDate',
+        'website',
+        'bio',
+        'location',
+        'phone',
     ];
 
     /**
@@ -55,7 +65,7 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
-    public function post()
+    public function posts()
     {
         return $this->hasMany(Post::class);
     }
@@ -70,13 +80,8 @@ class User extends Authenticatable
         return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id');
     }
 
-    public function message()
+    public function likes()
     {
-        return $this->belongsToMany(Message::class);
-    }
-
-    public function notifications()
-    {
-        return $this->hasMany(Notification::class);
+        return $this->hasMany(Like::class);
     }
 }

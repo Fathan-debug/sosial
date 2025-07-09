@@ -44,26 +44,26 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-3">
-                    <h2 class="mb-0 text-primary fw-bold">
-                        <i class="fas fa-share-alt me-2"></i>sosial
-                    </h2>
+                    <a href="{{ url('/Home') }}">
+                        <img src="{{ asset('build/assets/sosial_logo.png') }}" alt="Sosial Logo" style="height: 60px;">
+                    </a>
                 </div>
-                 <div class="col-md-9">
+                <div class="col-md-9">
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{{ url('/Home') }}"
                             class="btn {{ request()->is('Home') ? 'btn-primary' : 'btn-outline-primary' }}">
                             <i class="fas fa-home me-1"></i>Home
                         </a>
-                        <a href="{{ url('/friends') }}"
-                            class="btn {{ request()->is('friends') ? 'btn-primary' : 'btn-outline-primary' }}">
-                            <i class="fas fa-users me-1"></i>Friends
+                        <a href="{{ url('/connect') }}"
+                            class="btn {{ request()->is('connect') ? 'btn-primary' : 'btn-outline-primary' }}">
+                            <i class="fas fa-users me-1"></i>Connect
                         </a>
-                        <a href="{{ url('/notification') }}"
+                        {{-- <a href="{{ url('/notification') }}"
                             class="btn {{ request()->is('notification') ? 'btn-primary' : 'btn-outline-primary' }}">
                             <i class="fas fa-bell me-1"></i>Notifications
-                        </a>
-                        <a href="{{ url('/profile') }}"
-                            class="btn {{ request()->is('profile') ? 'btn-primary' : 'btn-outline-primary' }}">
+                        </a> --}}
+                        <a href="{{ route('profile', ['id' => Auth::user()->id]) }}"
+                            class="btn {{ request()->is('profile*') ? 'btn-primary' : 'btn-outline-primary' }}">
                             <i class="fas fa-user me-1"></i>Profile
                         </a>
                     </div>
@@ -77,9 +77,7 @@
         <div class="card shadow-sm">
             <!-- Cover Photo -->
             <div class="cover-photo position-relative">
-                <button class="btn btn-light btn-sm position-absolute top-0 end-0 m-3">
-                    <i class="bi bi-camera"></i> Edit Cover
-                </button>
+
             </div>
 
             <!-- Profile Info -->
@@ -88,58 +86,82 @@
                     <div class="col-md-3 text-center">
                         <!-- Profile Picture -->
                         <div class="position-relative d-inline-block">
-                            <img src="https://picsum.photos/120/120?random=profile" class="rounded-circle profile-pic"
+                            <img src="{{ asset('storage/' . $user->profile_pic) }}" class="rounded-circle profile-pic"
                                 alt="Profile Picture">
                             <button class="btn btn-primary btn-sm rounded-circle position-absolute bottom-0 end-0">
-                                <i class="bi bi-camera"></i>
+                                <i class="fas fa-user me"></i>
                             </button>
                         </div>
                     </div>
 
                     <div class="col-md-6">
-                        <h2 class="fw-bold mb-1">Alex Jordan</h2>
-                        <p class="text-muted mb-2">@alexjordan</p>
-                        <p class="mb-3">Digital creator & photographer 📸 | Love exploring new places 🌍 | Coffee
-                            enthusiast ☕</p>
+                        <h2 class="fw-bold mb-1">{{ $user->name }}</h2>
+                        <p class="text-muted mb-2">{{ $user->email }}</p>
+                        <p class="mb-3">{{ $user->bio }}</p>
 
                         <div class="d-flex flex-wrap gap-3 text-muted small mb-3">
-                            <span><i class="bi bi-geo-alt"></i> San Francisco, CA</span>
-                            <span><i class="bi bi-calendar"></i> Joined March 2020</span>
-                            <span><i class="bi bi-link-45deg"></i> <a href="#"
-                                    class="text-decoration-none">alexjordan.com</a></span>
+                            <span><i class="bi bi-geo-alt"></i> {{ $user->location }}</span>
+                            <span><i class="bi bi-calendar"></i> {{ $user->birthDate }}</span>
+                            <span><i class="bi bi-link-45deg"></i> <a href="#" class="text-decoration-none">
+                                    {{ $user->website }}</a></span>
                         </div>
 
                         <!-- Stats -->
                         <div class="row text-center">
                             <div class="col-4">
                                 <div class="stats-card p-2 rounded">
-                                    <div class="fw-bold fs-5">1,234</div>
+                                    <div class="fw-bold fs-5">{{ $user->posts()->count() }}</div>
                                     <div class="text-muted small">Posts</div>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="stats-card p-2 rounded">
-                                    <div class="fw-bold fs-5">45.2K</div>
+                                    <div class="fw-bold fs-5">{{ $user->followers()->count() }}</div>
                                     <div class="text-muted small">Followers</div>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="stats-card p-2 rounded">
-                                    <div class="fw-bold fs-5">892</div>
+                                    <div class="fw-bold fs-5">{{ $user->following()->count() }}</div>
                                     <div class="text-muted small">Following</div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-md-3 text-end">
-                        <button id="followBtn" class="btn btn-primary mb-2 w-100" onclick="toggleFollow()">
-                            <i class="bi bi-person-plus"></i> Follow
-                        </button>
-                        <button class="btn btn-outline-secondary w-100">
-                            <i class="bi bi-chat"></i> Message
-                        </button>
-                    </div>
+                    @if (Auth::check() && Auth::user()->id !== $user->id)
+                        <div class="col-md-3 text-end">
+                            @php
+                                $isFollowing = Auth::user()->following->contains($user->id);
+                            @endphp
+
+                            <form method="POST"
+                                action="{{ $isFollowing ? route('user.unfollow', $user->id) : route('user.follow', $user->id) }}">
+                                @csrf
+                                <button type="submit"
+                                    class="btn {{ $isFollowing ? 'btn-success' : 'btn-primary' }} w-100 mb-2">
+                                    <i class="bi {{ $isFollowing ? 'bi-person-check' : 'bi-person-plus' }}"></i>
+                                    {{ $isFollowing ? 'Following' : 'Follow' }}
+                                </button>
+                            </form>
+                        </div>
+                    @else
+                        <div class="col-md-3 text-end">
+                            <a href="{{ route('UpdateProfile', ['id' => Auth::user()->id]) }}"
+                                class="btn btn-primary mb-2 w-100">
+                                <i class="bi bi-pencil-square"></i> Edit
+                            </a>
+                            <a href="{{ url('/CreatePost') }}" class="btn btn-primary mb-2 w-100">
+                                <i class="bi bi-plus"></i> New Post
+                            </a>
+                            <form method="POST" action="{{ route('logout') }}" class="btn btn-danger mb-2 w-100">
+                                @csrf
+                                <button type="submit">
+                                    <i class="fas fa-sign-out-alt me-1"></i>Log Out
+                                </button>
+                            </form>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -162,12 +184,7 @@
                             <i class="bi bi-info-circle"></i> About
                         </button>
                     </li>
-                    {{-- <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="photos-tab" data-bs-toggle="tab" data-bs-target="#photos"
-                            type="button">
-                            <i class="bi bi-images"></i> Photos
-                        </button>
-                    </li> --}}
+                    {{-- # --}}
                 </ul>
             </div>
 
@@ -177,94 +194,71 @@
                     <div class="tab-pane fade show active" id="posts" role="tabpanel">
                         <div class="row g-3">
                             <!-- Post 1 -->
-                            <div class="col-md-4">
-                                <div class="card post-hover position-relative overflow-hidden">
-                                    <img src="https://picsum.photos/300/300?random=1" class="card-img-top" alt="Post">
-                                    <div
-                                        class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-0 hover-overlay">
-                                        <div class="text-white d-none hover-content">
-                                            <span class="me-3"><i class="bi bi-heart-fill"></i> 124</span>
-                                            <span><i class="bi bi-chat-fill"></i> 18</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            @forelse ($posts as $post)
+                                <div class="card mb-4">
+                                    <div class="card-body">
+                                        <p>{{ $post->caption }}</p>
+                                        @if ($post->image)
+                                            <img src="{{ asset('storage/' . $post->image) }}" class="img-fluid mt-2"
+                                                alt="Post media">
+                                            <br>
+                                        @endif
 
-                            <!-- Post 2 -->
-                            <div class="col-md-4">
-                                <div class="card post-hover position-relative overflow-hidden">
-                                    <img src="https://picsum.photos/300/300?random=2" class="card-img-top" alt="Post">
-                                    <div
-                                        class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-0 hover-overlay">
-                                        <div class="text-white d-none hover-content">
-                                            <span class="me-3"><i class="bi bi-heart-fill"></i> 89</span>
-                                            <span><i class="bi bi-chat-fill"></i> 12</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <p class="text-muted mt-2 mb-0">
+                                                Posted on {{ $post->created_at->format('d M Y h:i A') }}
+                                            </p>
 
-                            <!-- Post 3 -->
-                            <div class="col-md-4">
-                                <div class="card post-hover position-relative overflow-hidden">
-                                    <img src="https://picsum.photos/300/300?random=3" class="card-img-top" alt="Post">
-                                    <div
-                                        class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-0 hover-overlay">
-                                        <div class="text-white d-none hover-content">
-                                            <span class="me-3"><i class="bi bi-heart-fill"></i> 156</span>
-                                            <span><i class="bi bi-chat-fill"></i> 23</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                            <div class="d-flex gap-2">
+                                                @php
+                                                    $liked = $post->likes->contains('user_id', auth()->id());
+                                                @endphp
 
-                            <!-- Post 4 -->
-                            <div class="col-md-4">
-                                <div class="card post-hover position-relative overflow-hidden">
-                                    <img src="https://picsum.photos/300/300?random=4" class="card-img-top" alt="Post">
-                                    <div
-                                        class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-0 hover-overlay">
-                                        <div class="text-white d-none hover-content">
-                                            <span class="me-3"><i class="bi bi-heart-fill"></i> 203</span>
-                                            <span><i class="bi bi-chat-fill"></i> 34</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                                <form
+                                                    action="{{ $liked ? route('posts.unlike', $post->id) : route('posts.like', $post->id) }}"
+                                                    method="POST">
+                                                    @csrf
+                                                    @if ($liked)
+                                                        @method('DELETE')
+                                                    @endif
+                                                    <button type="submit"
+                                                        class="btn btn-sm {{ $liked ? 'btn-primary' : 'btn-outline-primary' }}">
+                                                        <i class="fas fa-thumbs-up me-1"></i>
+                                                        {{ $post->likes->count() }}
+                                                        Like{{ $post->likes->count() !== 1 ? 's' : '' }}
+                                                    </button>
+                                                </form>
 
-                            <!-- Post 5 -->
-                            <div class="col-md-4">
-                                <div class="card post-hover position-relative overflow-hidden">
-                                    <img src="https://picsum.photos/300/300?random=5" class="card-img-top" alt="Post">
-                                    <div
-                                        class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-0 hover-overlay">
-                                        <div class="text-white d-none hover-content">
-                                            <span class="me-3"><i class="bi bi-heart-fill"></i> 78</span>
-                                            <span><i class="bi bi-chat-fill"></i> 9</span>
+                                                @if(auth()->id() === $post->user_id)
+                                                    <form action="{{ route('posts.destroy', $post->id) }}" method="POST">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-danger"
+                                                            onclick="return confirm('Are you sure you want to delete this post?')">
+                                                            <i class="fas fa-trash-alt me-1"></i> Delete
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <!-- Post 6 -->
-                            <div class="col-md-4">
-                                <div class="card post-hover position-relative overflow-hidden">
-                                    <img src="https://picsum.photos/300/300?random=6" class="card-img-top" alt="Post">
-                                    <div
-                                        class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-0 hover-overlay">
-                                        <div class="text-white d-none hover-content">
-                                            <span class="me-3"><i class="bi bi-heart-fill"></i> 167</span>
-                                            <span><i class="bi bi-chat-fill"></i> 28</span>
-                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            @empty
+                                <div class="text-center py-5">
+                                    <i class="bi bi-camera text-secondary fs-1 mb-3"></i>
+                                    <h5 class="text-muted">No posts to show</h5>
+                                    <p class="text-muted">Start sharing your thoughts, photos, or moments!</p>
+                                    @if(Auth::id() === $user->id)
+                                        <a href="{{ url('/CreatePost') }}" class="btn btn-outline-primary mt-2">
+                                            <i class="bi bi-plus-circle"></i> Create your first post
+                                        </a>
+                                    @endif
+                                </div>
+                            @endforelse
                         </div>
 
-                        <!-- Load More Button -->
-                        <div class="text-center mt-4">
-                            <button class="btn btn-outline-primary">Load More Posts</button>
-                        </div>
+
                     </div>
 
                     <!-- About Tab -->
@@ -273,20 +267,18 @@
                             <div class="col-md-6">
                                 <h5>Contact Info</h5>
                                 <ul class="list-unstyled">
-                                    <li class="mb-2"><i class="bi bi-envelope"></i> alex.jordan@email.com</li>
-                                    <li class="mb-2"><i class="bi bi-telephone"></i> +1 (555) 123-4567</li>
-                                    <li class="mb-2"><i class="bi bi-geo-alt"></i> San Francisco, California</li>
+                                    <li class="mb-2"><i class="bi bi-envelope"></i> {{ $user->email }}</li>
+                                    <li class="mb-2"><i class="bi bi-telephone"></i> +60 {{ $user->phone }}</li>
+                                    <li class="mb-2"><i class="bi bi-geo-alt"></i> {{ $user->location }}</li>
                                     <li class="mb-2"><i class="bi bi-link-45deg"></i> <a href="#"
-                                            class="text-decoration-none">alexjordan.com</a></li>
+                                            class="text-decoration-none"> {{ $user->website }}</a></li>
                                 </ul>
                             </div>
                             <div class="col-md-6">
                                 <h5>Basic Info</h5>
                                 <ul class="list-unstyled">
-                                    <li class="mb-2"><strong>Born:</strong> January 15, 1992</li>
-                                    <li class="mb-2"><strong>Occupation:</strong> Digital Creator</li>
-                                    <li class="mb-2"><strong>Interests:</strong> Photography, Travel, Coffee</li>
-                                    <li class="mb-2"><strong>Languages:</strong> English, Spanish</li>
+                                    <li class="mb-2"><strong>Born:</strong> {{ $user->birthDate }}</li>
+                                    <li class="mb-2"><strong>Biography:</strong> {{ $user->bio }}</li>
                                 </ul>
                             </div>
                         </div>
@@ -332,26 +324,22 @@
     </div>
 
     <!-- Footer -->
-    <footer class="bg-white mt-5 py-4 border-top">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    {{-- <h6 class="fw-bold text-primary">
-                        <i class="bi bi-chat-dots-fill"></i> Sosial
-                    </h6> --}}
-                    <div style="text-align: center; margin-bottom: 24px;">
-                        <img src="/images/your-logo.png" alt="Sosial Logo" style="height: 60px;">
-                    </div>
-                    <p class="text-muted small">Connect with friends and share your moments.</p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <a href="#" class="text-muted text-decoration-none me-3">Privacy</a>
-                    <a href="#" class="text-muted text-decoration-none me-3">Terms</a>
-                    <a href="#" class="text-muted text-decoration-none">Help</a>
-                </div>
+    <footer style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+        class="py-4 mt-5 shadow-sm text-white">
+        <div class="container text-center">
+            <!-- Logo centered with Flexbox -->
+            <div class="d-flex justify-content-center mb-3">
+                <img src="{{ asset('build/assets/sosial_logo.png') }}" alt="Sosial Logo" style="height: 50px;">
             </div>
+
+            <p class="text-white text-decoration-none small">Connecting you with friends, moments & stories.</p>
+
+            <hr class="my-3">
+
+            <p class="text-white text-decoration-none small">&copy; {{ now()->year }} Sosial. All rights reserved.</p>
         </div>
     </footer>
+
 
     <!-- Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
@@ -397,7 +385,7 @@
         document.querySelectorAll('.stats-card').forEach(card => {
             card.addEventListener('click', function () {
                 const statType = this.querySelector('.text-muted').textContent;
-                alert(`Viewing ${statType} details`);
+                alert(Viewing ${ statType } details);
             });
         });
     </script>
